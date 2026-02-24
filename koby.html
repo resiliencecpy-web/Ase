@@ -1,12 +1,224 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KOBY System Interface</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KOBY — ASCEND</title>
+
+<style>
+body{
+    margin:0;
+    font-family:Arial, sans-serif;
+    background:#0a0a0a;
+    color:#f5f5f5;
+}
+
+header{
+    padding:20px;
+    background:#111;
+    border-bottom:2px solid #c9a227;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+header h1{
+    margin:0;
+    letter-spacing:3px;
+}
+
+.status{
+    color:#22c55e;
+    font-size:14px;
+}
+
+nav{
+    display:flex;
+    background:#151515;
+}
+
+nav button{
+    flex:1;
+    padding:15px;
+    background:none;
+    border:none;
+    color:white;
+    cursor:pointer;
+    font-weight:bold;
+}
+
+nav button.active{
+    background:#c9a227;
+    color:black;
+}
+
+main{
+    padding:25px;
+}
+
+.section{
+    display:none;
+}
+
+.section.active{
+    display:block;
+}
+
+input, select{
+    width:100%;
+    padding:12px;
+    margin:10px 0;
+    background:#1a1a1a;
+    border:1px solid #333;
+    color:white;
+}
+
+button.primary{
+    background:#c9a227;
+    color:black;
+    padding:15px;
+    border:none;
+    font-weight:bold;
+    cursor:pointer;
+    margin-top:15px;
+}
+
+.result{
+    margin-top:20px;
+    padding:20px;
+    background:#151515;
+    border-left:4px solid #c9a227;
+}
+</style>
 </head>
+
 <body>
-    <h1>Welcome to the KOBY System Interface</h1>
-    <p>This interface allows you to interact with the KOBY system.</p>
+
+<header>
+    <h1>KOBY</h1>
+    <div class="status">SYSTEM ACTIVE</div>
+</header>
+
+<nav>
+    <button class="active" onclick="show('evaluate',this)">Nova Avaliação</button>
+    <button onclick="show('cases',this)">Casos</button>
+</nav>
+
+<main>
+
+<section id="evaluate" class="section active">
+
+<h3>Identificação</h3>
+<input type="text" id="memberId" placeholder="Member ID">
+
+<h3>Competência Técnica (1-5)</h3>
+<select id="technical">
+<option value="1">1</option>
+<option value="2">2</option>
+<option value="3">3</option>
+<option value="4">4</option>
+<option value="5">5</option>
+</select>
+
+<h3>Estrutura de Receita (1-5)</h3>
+<select id="revenue">
+<option value="1">1</option>
+<option value="2">2</option>
+<option value="3">3</option>
+<option value="4">4</option>
+<option value="5">5</option>
+</select>
+
+<h3>Consistência (1-5)</h3>
+<select id="consistency">
+<option value="1">1</option>
+<option value="2">2</option>
+<option value="3">3</option>
+<option value="4">4</option>
+<option value="5">5</option>
+</select>
+
+<button class="primary" onclick="evaluate()">Processar Avaliação</button>
+
+<div id="result"></div>
+
+</section>
+
+<section id="cases" class="section">
+    <h3>Casos Registrados</h3>
+    <div id="casesList"></div>
+</section>
+
+</main>
+
+<script>
+
+function show(id,btn){
+    document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
+    document.querySelectorAll("nav button").forEach(b=>b.classList.remove("active"));
+    document.getElementById(id).classList.add("active");
+    btn.classList.add("active");
+    loadCases();
+}
+
+function evaluate(){
+    const id=document.getElementById("memberId").value;
+    const tech=parseInt(document.getElementById("technical").value);
+    const rev=parseInt(document.getElementById("revenue").value);
+    const cons=parseInt(document.getElementById("consistency").value);
+
+    if(!id){
+        alert("Member ID obrigatório.");
+        return;
+    }
+
+    const avg=(tech+rev+cons)/3;
+
+    let level="";
+    if(avg<2) level="Foundational";
+    else if(avg<3) level="Developing";
+    else if(avg<4) level="Competitive";
+    else if(avg<4.5) level="Advanced";
+    else level="Elite";
+
+    const resultHTML=`
+    <div class="result">
+        <h3>Resultado</h3>
+        <p><strong>Nível:</strong> ${level}</p>
+        <p><strong>Média:</strong> ${avg.toFixed(2)}</p>
+        <p>— KOBY<br>Supreme Institutional Intelligence<br>ASCEND Global</p>
+    </div>
+    `;
+
+    document.getElementById("result").innerHTML=resultHTML;
+
+    saveCase(id,level,avg);
+}
+
+function saveCase(id,level,avg){
+    let cases=JSON.parse(localStorage.getItem("kobyCases"))||[];
+    cases.push({id,level,avg,date:new Date().toLocaleDateString()});
+    localStorage.setItem("kobyCases",JSON.stringify(cases));
+}
+
+function loadCases(){
+    const container=document.getElementById("casesList");
+    let cases=JSON.parse(localStorage.getItem("kobyCases"))||[];
+    if(cases.length===0){
+        container.innerHTML="Nenhum caso registrado.";
+        return;
+    }
+    container.innerHTML=cases.map(c=>
+        `<div class="result">
+            <strong>${c.id}</strong><br>
+            Nível: ${c.level}<br>
+            Média: ${c.avg.toFixed(2)}<br>
+            Data: ${c.date}
+        </div>"
+    ).join("");
+}
+
+</script>
+
 </body>
 </html>
